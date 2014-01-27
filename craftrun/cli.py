@@ -40,7 +40,8 @@ class CraftRunCli(object):
     """
     def __init__(self):
         self.commands = [
-            StartCommand(),
+            command.StartCommand,
+            command.StopCommand,
         ]
 
     def run(self):

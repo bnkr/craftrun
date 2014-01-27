@@ -54,3 +54,35 @@ class StartCommand(object):
             yield
         finally:
             os.chdir(restore_to)
+
+class StopCommand(object):
+    """Stop the server if running."""
+    name = "stop"
+
+    @classmethod
+    def configure_cli(cls, parser):
+        pass
+
+    def __init__(self, settings):
+        self.settings = settings
+        self.screen = ScreenSession(name=settings.server_name)
+
+    def run(self):
+        if not self.screen.is_running():
+            logging.info("already stopped")
+            return 0
+
+        self.screen.send("stop")
+
+        tries = 0
+        max_tries = 5
+
+        while self.screen.is_running() and tries < max_tries:
+            time.sleep(0.5)
+
+        if self.screen.is_running():
+            logging.error("session did not stop")
+            return 1
+
+        logging.info("session has stopped")
+        return 0
