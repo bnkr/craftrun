@@ -52,7 +52,8 @@ class CraftRunCli(object):
 
     def run(self):
         parser = self.get_parser()
-        parser.add_argument("-c", "--config", dest="config")
+        parser.add_argument("-c", "--config", dest="config", required=True,
+                            help="Server configuration.")
         parsed = parser.parse_args()
 
         logging.basicConfig(
