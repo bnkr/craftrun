@@ -17,7 +17,7 @@ class ScreenSession(object):
 
     def send(self, data):
         # TODO: wipe current line in case the user left something there
-        pipe = self._screen(['-X', 'stuff', data + "\r\n"])
+        pipe = self._screen(['-X', 'stuff', data + "\n"])
         if pipe.wait() != 0:
             raise Exception("screen failed")
 
@@ -28,7 +28,7 @@ class ScreenSession(object):
             out, err = pipe.communicate()
 
             for line in out.split("\n"):
-                if self.name in line and "Detached" in line:
+                if self.name in line:
                     return True
 
             return False
@@ -39,6 +39,6 @@ class ScreenSession(object):
         return self._pipe(['screen', '-S', self.name] + args)
 
     def _pipe(self, args, **kw):
-        logging.info("execute {0!r}".format(args))
+        logging.debug("execute {0!r}".format(args))
         pipe = subprocess.Popen(args, **kw)
         return pipe

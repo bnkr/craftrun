@@ -14,6 +14,10 @@ class Settings(object):
         return self._absolute_path(self.config['base_dir'])
 
     @property
+    def backup_dir(self):
+        return self._absolute_path(self.config['backup_dir'])
+
+    @property
     def server_name(self):
         return self.config['server_name']
 
@@ -32,7 +36,7 @@ class Settings(object):
 
     def _absolute_path(self, path):
         config_dir = os.path.dirname(self.cli.config)
-        return os.path.join(config_dir, path)
+        return os.path.realpath(os.path.join(config_dir, path))
 
 class CraftRunCli(object):
     """
@@ -43,6 +47,7 @@ class CraftRunCli(object):
             command.StartCommand,
             command.StopCommand,
             command.ConsoleCommand,
+            command.BackupCommand,
         ]
 
     def run(self):
@@ -50,7 +55,10 @@ class CraftRunCli(object):
         parser.add_argument("-c", "--config", dest="config")
         parsed = parser.parse_args()
 
-        logging.basicConfig(level=logging.INFO)
+        logging.basicConfig(
+                level=logging.DEBUG,
+                format="%(asctime)s %(levelname)s %(message)s",
+        )
 
         selected = next((command for command in self.commands
                          if command.name == parsed.command))
