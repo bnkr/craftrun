@@ -118,7 +118,8 @@ class BackupCommand(object):
 
     @classmethod
     def configure_cli(cls, parser):
-        parser.add_argument("-w", "--world-only", action='store_true')
+        parser.add_argument("-w", "--world-only", action='store_true',
+                            help="Only back up worlds.")
         parser.add_argument("-T", "--flush-wait-time", type=int, default=10,
                             help='Seconds to wait for the world to be saved.')
 
@@ -141,6 +142,9 @@ class BackupCommand(object):
         output = self._get_output_path()
         target = self._get_backup_target()
 
+        if not self.is_running:
+            logging.info("server is not running")
+
         with self._in_dir_above_server():
             try:
                 self._say("backup of {0} starting".format(target))
@@ -158,7 +162,8 @@ class BackupCommand(object):
         return 0
 
     def _say(self, text):
-        self.screen.send("say {0}".format(text))
+        if self.is_running:
+            self.screen.send("say {0}".format(text))
 
     @contextlib.contextmanager
     def _in_dir_above_server(self):
