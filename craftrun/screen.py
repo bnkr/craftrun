@@ -12,6 +12,9 @@ class ScreenSession(object):
         if pipe.wait() != 0:
             raise Exception("screen failed to launch")
 
+    def join(self):
+        self._pipe(['screen', '-r', self.name]).wait()
+
     def send(self, data):
         # TODO: wipe current line in case the user left something there
         pipe = self._screen(['-X', 'stuff', data + "\r\n"])

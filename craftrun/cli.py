@@ -42,6 +42,7 @@ class CraftRunCli(object):
         self.commands = [
             command.StartCommand,
             command.StopCommand,
+            command.ConsoleCommand,
         ]
 
     def run(self):
@@ -60,10 +61,10 @@ class CraftRunCli(object):
 
     def get_parser(self):
         parser = argparse.ArgumentParser()
-        subparsers = parser.add_subparsers(help='sub-command help', dest="command")
+        subparsers = parser.add_subparsers(help='operation', dest="command")
 
         for command in self.commands:
-            subparser = subparsers.add_parser(command.name)
+            subparser = subparsers.add_parser(command.name, help=command.help)
             command.configure_cli(subparser)
 
         return parser

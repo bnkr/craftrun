@@ -1,9 +1,10 @@
-import os, contextlib, subprocess, logging, time
+import os, contextlib, subprocess, logging, time, sys
 from craftrun.screen import ScreenSession
 
 class StartCommand(object):
     """Start the server."""
     name = "start"
+    help = "Start a single instance of the server."
 
     class Error(Exception):
         pass
@@ -59,6 +60,7 @@ class StartCommand(object):
 class StopCommand(object):
     """Stop the server if running."""
     name = "stop"
+    help = "Stop server if running."
 
     @classmethod
     def configure_cli(cls, parser):
@@ -86,4 +88,23 @@ class StopCommand(object):
             return 1
 
         logging.info("session has stopped")
+        return 0
+
+class ConsoleCommand(object):
+    """Join the screen session."""
+    name = "console"
+    help = "Press C a-d to detach again."
+
+    @classmethod
+    def configure_cli(cls, parser):
+        pass
+
+    def __init__(self, settings):
+        self.screen = ScreenSession(name=settings.server_name)
+
+    def run(self):
+        if not sys.stdin.isatty():
+            logging.error("won't join wile not on a tty")
+            return 1
+        self.screen.join()
         return 0
