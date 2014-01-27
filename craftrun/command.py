@@ -56,6 +56,8 @@ class StartCommand(object):
         if not self.screen.is_running():
             raise self.Error("server did not start")
 
+        # TODO:
+        #   We could use a hardcopy and grep it?
         logging.info("probably running")
 
 class StopCommand(object):
@@ -138,6 +140,10 @@ class BackupCommand(object):
     def flush_time(self):
         return self.settings.cli.flush_wait_time
 
+    @property
+    def backup_type(self):
+        return self.settings.cli.world_only and "world" or "full"
+
     def run(self):
         output = self._get_output_path()
         target = self._get_backup_target()
@@ -147,7 +153,8 @@ class BackupCommand(object):
 
         with self._in_dir_above_server():
             try:
-                self._say("backup of {0} starting".format(target))
+                self._say("{0} backup of {1} starting".format(
+                    self.backup_type, self.settings.server_name))
                 self._set_saving(enabled=False)
                 self._flush_worlds()
                 self._tarball(output, target)
@@ -203,9 +210,8 @@ class BackupCommand(object):
 
     def _get_output_path(self):
         output_name = DateTime.now().strftime("%Y-%m-%d.%H-%M-%S")
-        backup_type = self.settings.cli.world_only and "world" or "full"
         full_name = "{0}-{1}-{2}.tar.bz2".format(
-                self.settings.server_name, backup_type, output_name)
+                self.settings.server_name, self.backup_type, output_name)
         output = os.path.join(self.settings.backup_dir, full_name)
         if os.path.exists(output):
             raise Exception("refusing to overwrite backup")

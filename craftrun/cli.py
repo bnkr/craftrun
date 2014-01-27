@@ -52,14 +52,23 @@ class CraftRunCli(object):
 
     def run(self):
         parser = self.get_parser()
+        parser.add_argument("-v", "--verbose", action='store_true',
+                            help="Show informational messages.")
+        parser.add_argument("-d", "--debug", action='store_true',
+                            help="Show debugging messages.")
         parser.add_argument("-c", "--config", dest="config", required=True,
                             help="Server configuration.")
         parsed = parser.parse_args()
 
-        logging.basicConfig(
-                level=logging.DEBUG,
-                format="%(asctime)s %(levelname)s %(message)s",
-        )
+        if parsed.debug:
+            level = logging.DEBUG
+        elif parsed.verbose:
+            level = logging.INFO
+        else:
+            level = logging.WARNING
+
+        logging.basicConfig(format="%(asctime)s %(levelname)s %(message)s",
+                            level=level,)
 
         selected = next((command for command in self.commands
                          if command.name == parsed.command))
