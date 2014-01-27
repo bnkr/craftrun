@@ -17,6 +17,11 @@ class StartCommand(object):
         self.screen = ScreenSession(name=settings.server_name)
 
     def run(self):
+        if self.screen.is_running():
+            why = "session {0!r} already running"
+            logging.info(why.format(self.screen.name))
+            return 0
+
         try:
             with self.in_dir(self.settings.base_dir):
                 self._launch_server()
@@ -31,10 +36,6 @@ class StartCommand(object):
         return java + server
 
     def _launch_server(self):
-        if self.screen.is_running():
-            why = "session {0!r} already running"
-            raise self.Error(why.format(self.screen.name))
-
         command = self._get_command(self.settings)
         self.screen.start(command)
 
