@@ -85,6 +85,7 @@ class StopCommand(object):
 
         while self.screen.is_running() and tries < max_tries:
             time.sleep(0.5)
+            tries += 1
 
         if self.screen.is_running():
             logging.error("session did not stop")
