@@ -1,4 +1,4 @@
-import subprocess, logging
+import subprocess, logging, pty
 
 class ScreenSession(object):
     """Interface to the CLI of GNU Screen in order to manage a session which
@@ -8,7 +8,9 @@ class ScreenSession(object):
         self.name = name
 
     def start(self, args):
-        pipe = self._screen(['-dm'] + args)
+        (master, slave) = pty.openpty()
+        pipe = self._screen(['-dm'] + args, stdout=slave,
+                            stdin=slave, stderr=slave)
         if pipe.wait() != 0:
             raise Exception("screen failed to launch")
 
