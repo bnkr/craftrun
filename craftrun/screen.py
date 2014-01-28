@@ -15,7 +15,10 @@ class ScreenSession(object):
             raise Exception("screen failed to launch")
 
     def join(self):
-        self._pipe(['screen', '-r', self.name]).wait()
+        """Although this is designed for fooling processes (like su) to read
+        from stdin when it's not a tty, it seems to work OK to avoid pty
+        ownership issues."""
+        pty.spawn(['screen', '-r', self.name])
 
     def send(self, data):
         # TODO: wipe current line in case the user left something there
