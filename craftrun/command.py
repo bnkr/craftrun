@@ -78,6 +78,7 @@ class StopCommand(object):
             logging.info("already stopped")
             return 0
 
+        # Pretty gentle.
         self.screen.send("stop")
 
         tries = 0

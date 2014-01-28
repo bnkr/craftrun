@@ -28,7 +28,7 @@ A configuration yaml file is required::
 Paths are always relative to the directory containing the config file (except as
 noted above).
 
-Examples::
+Examples (console output may change)::
 
   $ ./bin/craftrun -c config.yml -v start
   2014-01-27 23:13:54,816 INFO chdir '/home/mc/craftrun/serverdata'
