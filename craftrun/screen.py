@@ -8,6 +8,10 @@ class ScreenSession(object):
         self.name = name
 
     def start(self, args):
+        # TODO:
+        #   Would be nice to get the log if the session ends abruptly.
+        #   Otherwise it's hard to know that the command was ok or some other
+        #   problem...
         (master, slave) = pty.openpty()
         pipe = self._screen(['-dm'] + args, stdout=slave,
                             stdin=slave, stderr=slave)
