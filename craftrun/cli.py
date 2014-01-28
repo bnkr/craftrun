@@ -23,7 +23,11 @@ class Settings(object):
 
     @property
     def java_bin(self):
-        return self.config.get('java_bin', 'java')
+        command = self.config.get('java_bin', 'java')
+        if '/' in command:
+            return self._absolute_path(command)
+        else:
+            return command
 
     @property
     def server_jar(self):
