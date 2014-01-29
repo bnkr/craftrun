@@ -102,16 +102,20 @@ class ConsoleCommand(object):
 
     @classmethod
     def configure_cli(cls, parser):
-        pass
+        parser.add_argument("-t", "--tty", action='store_true', default=False,
+                            help="Create a new pty.  This works around pty " \
+                                 "ownership after an su, but can mess up your " \
+                                 "console.")
 
     def __init__(self, settings):
+        self.settings = settings
         self.screen = ScreenSession(name=settings.server_name)
 
     def run(self):
         if not sys.stdin.isatty():
             logging.error("won't join wile not on a tty")
             return 1
-        self.screen.join()
+        self.screen.join(new_tty=self.settings.cli.tty)
         return 0
 
 class BackupCommand(object):

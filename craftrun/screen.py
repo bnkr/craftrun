@@ -18,11 +18,18 @@ class ScreenSession(object):
         if pipe.wait() != 0:
             raise Exception("screen failed to launch")
 
-    def join(self):
+    def join(self, new_tty=False):
         """Although this is designed for fooling processes (like su) to read
         from stdin when it's not a tty, it seems to work OK to avoid pty
         ownership issues."""
-        pty.spawn(['screen', '-r', self.name])
+        args = ['screen', '-r', self.name]
+        if new_tty:
+            # TODO:
+            #   Can we do this less hackily?  I think it messes up the console
+            #   because it doesn't fully replace streams.  Dup2?
+            pty.spawn(args)
+        else:
+            self._pipe(args).wait()
 
     def send(self, data):
         # TODO: wipe current line in case the user left something there
