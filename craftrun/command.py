@@ -118,6 +118,57 @@ class ConsoleCommand(object):
         self.screen.join(new_tty=self.settings.cli.tty)
         return 0
 
+class TailCommand(object):
+    """Join the screen session."""
+    name = "tail"
+    help = "Tail the server's log file, defaulting to follow."
+
+    class Error(Exception):
+        pass
+
+    @classmethod
+    def configure_cli(cls, parser):
+        parser.add_argument("-n", "--number", default=0, type=int,
+                            help="Print n lines unstead of tailing forever.")
+
+    def __init__(self, settings):
+        self.settings = settings
+
+    def run(self):
+        if self.settings.cli.number:
+            args = ['-n', str(self.settings.cli.number)]
+        else:
+            args = ['-f']
+
+        try:
+            log_file = self._get_log_file()
+            command = ['tail'] + args + [log_file]
+            logging.debug("execute {0!r}".format(command))
+            status = subprocess.call(command)
+            return status
+        except self.Error as ex:
+            logging.error(ex)
+            return 1
+
+        return 0
+
+    def _get_log_file(self):
+        base_dir = self.settings.base_dir
+        possible_logs = [
+            # 1.7
+            os.path.join(base_dir, "logs", "latest.log"),
+            # 1.6
+            os.path.join(base_dir, "server.log"),
+        ]
+
+        for path in possible_logs:
+            if os.path.exists(path):
+                return path
+            else:
+                logging.info("no log at {0!r}".format(path))
+
+        raise self.Error("no log file found in {0!r}".format(base_dir))
+
 class BackupCommand(object):
     """Generate a backup tarball.  If it's just the worlds, then you still
     extract the tarball in the base dir."""

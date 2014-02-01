@@ -51,6 +51,7 @@ class CraftRunCli(object):
             command.StartCommand,
             command.StopCommand,
             command.ConsoleCommand,
+            command.TailCommand,
             command.BackupCommand,
         ]
 
