@@ -135,22 +135,28 @@ class TailCommand(object):
         self.settings = settings
 
     def run(self):
-        if self.settings.cli.number:
-            args = ['-n', str(self.settings.cli.number)]
-        else:
-            args = ['-f']
-
         try:
             log_file = self._get_log_file()
-            command = ['tail'] + args + [log_file]
-            logging.debug("execute {0!r}".format(command))
-            status = subprocess.call(command)
-            return status
+            return self._run_tail(log=log_file, lines=self.settings.cli.number)
         except self.Error as ex:
             logging.error(ex)
             return 1
 
         return 0
+
+    def _run_tail(self, log, lines):
+        if lines:
+            args = ['-n', str(lines)]
+        else:
+            args = ['-f']
+
+        command = ['tail'] + args + [log]
+        logging.debug("execute {0!r}".format(command))
+        try:
+            status = subprocess.call(command)
+            return status
+        except KeyboardInterrupt:
+            return 0
 
     def _get_log_file(self):
         base_dir = self.settings.base_dir
