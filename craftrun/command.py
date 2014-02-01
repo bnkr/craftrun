@@ -173,7 +173,7 @@ class BackupCommand(object):
     """Generate a backup tarball.  If it's just the worlds, then you still
     extract the tarball in the base dir."""
     name = "backup"
-    help = "Press C a-d to detach again."
+    help = "Take a backup tarball of the server."
 
     @classmethod
     def configure_cli(cls, parser):
@@ -214,6 +214,9 @@ class BackupCommand(object):
                     self.backup_type, self.settings.server_name))
                 self._set_saving(enabled=False)
                 self._flush_worlds()
+                # TODO:
+                #   Still getting a lot of 'world changed as we read it'
+                #   errors...
                 self._tarball(output, target)
                 self._say("backup finished")
             except:
