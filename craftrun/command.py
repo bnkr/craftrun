@@ -181,17 +181,25 @@ class BackupCommand(object):
     name = "backup"
     help = "Take a backup tarball of the server."
 
+    class Error(Exception):
+        pass
+
     @classmethod
     def configure_cli(cls, parser):
         parser.add_argument("-w", "--world-only", action='store_true',
                             help="Only back up worlds.")
         parser.add_argument("-T", "--flush-wait-time", type=int, default=10,
                             help='Seconds to wait for the world to be saved.')
+        parser.add_argument("-S", "--stop", action="store_true", default=False,
+                            help='Stop and start the server rather than ' \
+                                 'trying to disable saving (which seems ' \
+                                 'to be unreliable).')
 
     def __init__(self, settings):
         self.settings = settings
         self.screen = ScreenSession(name=settings.server_name)
         self._is_running = None
+        self._stopped_server = False
 
     @property
     def is_running(self):
@@ -207,7 +215,20 @@ class BackupCommand(object):
     def backup_type(self):
         return self.settings.cli.world_only and "world" or "full"
 
+    @property
+    def stop_server(self):
+        return bool(self.settings.cli.stop)
+
     def run(self):
+        try:
+            self._run()
+        except self.Error as ex:
+            logging.error(ex)
+            return 1
+
+        return 0
+
+    def _run(self):
         output = self._get_output_path()
         target = self._get_backup_target()
 
@@ -218,21 +239,56 @@ class BackupCommand(object):
             try:
                 self._say("{0} backup of {1} starting".format(
                     self.backup_type, self.settings.server_name))
-                self._set_saving(enabled=False)
-                self._flush_worlds()
-                # TODO:
-                #   Still getting a lot of 'world changed as we read it'
-                #   errors...
+                self._pre_backup()
                 self._tarball(output, target)
-                self._say("backup finished")
+
+                if not self.stop_server:
+                    self._say("backup finished")
             except:
-                self._say("backup failed")
+                if not self.stop_server:
+                    self._say("backup failed")
                 logging.error("exception during backup")
                 raise
             finally:
-                self._set_saving(enabled=True)
+                self._post_backup()
 
         return 0
+
+    def _pre_backup(self):
+        if self.stop_server:
+            self._say("server will go down now")
+            self._run_stop_server()
+        else:
+            # TODO:
+            #   Still getting a lot of 'world changed as we read it' errors...
+            self._set_saving(enabled=False)
+            self._flush_worlds()
+
+    def _post_backup(self):
+        if self.stop_server:
+            self._run_start_server()
+        else:
+            self._set_saving(enabled=True)
+
+    def _run_stop_server(self):
+        if not self.is_running:
+            logging.info("not stopping server since it's not running")
+            return
+
+        status = StopCommand(settings=self.settings).run()
+        if status != 0:
+            raise self.Error("could not stop server")
+
+        self._stopped_server = True
+
+    def _run_start_server(self):
+        if not self._stopped_server:
+            logging.info("not start server since we didn't stop it")
+            return
+
+        status = StartCommand(settings=self.settings).run()
+        if status != 0:
+            raise self.Error("could not start server after backup")
 
     def _say(self, text):
         if self.is_running:
