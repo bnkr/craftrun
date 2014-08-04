@@ -3,11 +3,16 @@ from craftrun import command
 
 class Settings(object):
     """Cli and config file settings."""
-    def __init__(self, cli):
+    def __init__(self, cli, config_dict=None):
         self.cli = cli
 
-        with open(cli.config, 'r') as io:
-            self.config = yaml.load(io.read())
+        if config_dict is not None:
+            self.config = config_dict
+        else:
+            with open(cli.config, 'r') as io:
+                self.config = yaml.load(io.read())
+
+        self.config_path = os.path.abspath(self.cli.config)
 
     @property
     def base_dir(self):
@@ -39,7 +44,7 @@ class Settings(object):
         return self.config.get('java_args', default_args)
 
     def _absolute_path(self, path):
-        config_dir = os.path.dirname(self.cli.config)
+        config_dir = os.path.dirname(self.config_path)
         return os.path.realpath(os.path.join(config_dir, path))
 
 class CraftRunCli(object):

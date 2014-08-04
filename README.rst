@@ -24,6 +24,8 @@ A configuration yaml file is required::
   backup_dir: "."
   # Relative path to server jar file within the server dir.
   server_jar: minecraft_server.1.7.4.jar
+  # Location of java (optional)
+  java_bin: "../jre1.7.0_65/bin/java"
 
 Paths are always relative to the directory containing the config file (except as
 noted above).
